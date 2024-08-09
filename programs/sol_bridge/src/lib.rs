@@ -11,7 +11,7 @@ use instructions::*;
 pub use state::*;
 pub use event::*;
 
-declare_id!("CYQLKQPkF4okEq3pLmT1rNHqQoePz1pDEA2aaWF2BC4E");
+declare_id!("7xe9EhqT7bQe5T142Zbxt8TxbkArhSFyRjtd8xDD2uAv");
 
 #[program]
 pub mod sol_bridge {
@@ -25,37 +25,37 @@ pub mod sol_bridge {
         instructions::set_protocol_fee(ctx, protocol_fee)
     }
 
-    pub fn withdraw_token(ctx: Context<WithdrawToken>, token_id: u16, amount: u64) -> Result<()> {
-        instructions::withdraw_token(ctx, token_id, amount)
+    pub fn withdraw_token(ctx: Context<WithdrawToken>, token_id: u16, target_chain_selector: u32, amount: u64) -> Result<()> {
+        instructions::withdraw_token(ctx, token_id, target_chain_selector, amount)
     }
 
     pub fn withdraw(ctx: Context<Withdraw>, amount: u64) -> Result<()> {
         instructions::withdraw(ctx, amount)
     }
 
-    pub fn add_token(ctx: Context<ManageToken>, token_id: u16, token_mint: Pubkey) -> Result<()> {
-        instructions::add_token(ctx, token_id, token_mint)
+    pub fn add_token(ctx: Context<ManageToken>, token_id: u16, target_chain_selector: u32, token_mint: Pubkey) -> Result<()> {
+        instructions::add_token(ctx, token_id, target_chain_selector,token_mint)
     }
 
-    pub fn remove_token(ctx: Context<ManageToken>, token_id: u16) -> Result<()> {
-        instructions::remove_token(ctx, token_id)
+    pub fn remove_token(ctx: Context<ManageToken>, token_id: u16, target_chain_selector: u32) -> Result<()> {
+        instructions::remove_token(ctx, token_id, target_chain_selector)
     }
 
-    pub fn update_token_balance(ctx: Context<ManageToken>, token_id: u16, amount: u64, flag: bool) -> Result<()> {
-        instructions::update_token_balance(ctx, token_id, amount, flag)
+    pub fn update_token_balance(ctx: Context<ManageToken>, token_id: u16, target_chain_selector: u32, amount: u64, flag: bool) -> Result<()> {
+        instructions::update_token_balance(ctx, token_id, target_chain_selector,amount, flag)
     }
 
-    pub fn add_liquidity(ctx: Context<AddLiquidity>, token_id: u16, amount: u64) -> Result<()> {
-        instructions::add_liquidity(ctx, token_id, amount)
+    pub fn add_liquidity(ctx: Context<AddLiquidity>, token_id: u16, target_chain_selector: u32,amount: u64) -> Result<()> {
+        instructions::add_liquidity(ctx, token_id, target_chain_selector,amount)
     }
 
-    pub fn message_receive(ctx: Context<MessageReceive>, token_id: u16, amount: u64) -> Result<()> {
-        instructions::message_receive(ctx, token_id, amount)
+    pub fn message_receive(ctx: Context<MessageReceive>, token_id: u16, target_chain_selector: u32, amount: u64) -> Result<()> {
+        instructions::message_receive(ctx, token_id, target_chain_selector, amount)
     }
 
     //  user function
-    pub fn send(ctx: Context<Send>, token_id: u16, amount: u64) -> Result<()> {
-        instructions::send(ctx, token_id, amount)
+    pub fn send(ctx: Context<Send>, token_id: u16, target_chain_selector: u32, amount: u64) -> Result<()> {
+        instructions::send(ctx, token_id, target_chain_selector, amount)
     }
     
 }

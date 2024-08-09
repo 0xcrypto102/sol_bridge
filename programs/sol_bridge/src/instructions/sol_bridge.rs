@@ -7,7 +7,7 @@ use anchor_spl::{
 use crate::{state::*, constants::*, error::*, event::*};
 use solana_program::{program::invoke, system_instruction};
 
-pub fn add_liquidity(ctx: Context<AddLiquidity>, token_id: u16, amount: u64) -> Result<()> {
+pub fn add_liquidity(ctx: Context<AddLiquidity>, token_id: u16, target_chain_selector: u32,amount: u64) -> Result<()> {
     let bridge = &ctx.accounts.bridge;
     let user = &ctx.accounts.user;
 
@@ -17,7 +17,7 @@ pub fn add_liquidity(ctx: Context<AddLiquidity>, token_id: u16, amount: u64) -> 
     require!(bridge.token_ids.contains(&token_id), BridgeErrorCode::UnsupportedToken);
 
     // Get the token address
-    let token_address = bridge.get_token_address(token_id).ok_or(BridgeErrorCode::UnsupportedToken)?;
+    let token_address = bridge.get_token_address(token_id,target_chain_selector).ok_or(BridgeErrorCode::UnsupportedToken)?;
 
 
     require!(token_address == &ctx.accounts.token_mint.key(), BridgeErrorCode::DisMatchToken);
@@ -47,19 +47,19 @@ pub fn add_liquidity(ctx: Context<AddLiquidity>, token_id: u16, amount: u64) -> 
     Ok(())
 }
 
-pub fn send(ctx: Context<Send>, token_id: u16, amount: u64) -> Result<()> {
+pub fn send(ctx: Context<Send>, token_id: u16, target_chain_selector: u32, amount: u64) -> Result<()> {
     let accts = ctx.accounts;
 
     // Check if token is supported
     require!(accts.bridge.token_ids.contains(&token_id), BridgeErrorCode::UnsupportedToken);
 
     // Get the token address
-    let token_address = accts.bridge.get_token_address(token_id).ok_or(BridgeErrorCode::UnsupportedToken)?;
+    let token_address = accts.bridge.get_token_address(token_id, target_chain_selector).ok_or(BridgeErrorCode::UnsupportedToken)?;
 
 
     require!(token_address == &accts.token_mint.key(), BridgeErrorCode::DisMatchToken);
 
-    let target_balance = accts.bridge.get_target_balance(token_id)?;
+    let target_balance = accts.bridge.get_target_balance(token_id, target_chain_selector)?;
 
     require!(target_balance > amount, BridgeErrorCode::InsufficientBalance);
 
@@ -101,7 +101,7 @@ pub fn send(ctx: Context<Send>, token_id: u16, amount: u64) -> Result<()> {
     Ok(())
 }
 
-pub fn message_receive(ctx: Context<MessageReceive>, token_id: u16, amount: u64) -> Result<()> {
+pub fn message_receive(ctx: Context<MessageReceive>, token_id: u16, target_chain_selector: u32, amount: u64) -> Result<()> {
     let bridge = &ctx.accounts.bridge;
     
     require!(bridge.owner == *ctx.accounts.owner.key, BridgeErrorCode::InvalidOwner);
@@ -110,7 +110,7 @@ pub fn message_receive(ctx: Context<MessageReceive>, token_id: u16, amount: u64)
     require!(bridge.token_ids.contains(&token_id), BridgeErrorCode::UnsupportedToken);
 
     // Check if token is supported
-    let token_address = bridge.get_token_address(token_id).ok_or(BridgeErrorCode::UnsupportedToken)?;
+    let token_address = bridge.get_token_address(token_id,target_chain_selector).ok_or(BridgeErrorCode::UnsupportedToken)?;
 
 
     require!(token_address == &ctx.accounts.token_mint.key(), BridgeErrorCode::DisMatchToken);

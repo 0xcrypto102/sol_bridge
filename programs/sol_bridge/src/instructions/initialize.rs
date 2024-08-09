@@ -54,7 +54,7 @@ pub fn withdraw(ctx: Context<Withdraw>, amount: u64) -> Result<()> {
     Ok(())
 }
 
-pub fn withdraw_token(ctx: Context<WithdrawToken>, token_id: u16, amount: u64) -> Result<()> {
+pub fn withdraw_token(ctx: Context<WithdrawToken>, token_id: u16, target_chain_selector: u32, amount: u64) -> Result<()> {
     let bridge = &ctx.accounts.bridge;
 
     require!(bridge.owner == *ctx.accounts.owner.key, BridgeErrorCode::InvalidOwner);
@@ -63,7 +63,7 @@ pub fn withdraw_token(ctx: Context<WithdrawToken>, token_id: u16, amount: u64) -
     require!(bridge.token_ids.contains(&token_id), BridgeErrorCode::UnsupportedToken);
 
     // Get the token address
-    let token_mint = bridge.get_token_address(token_id).ok_or(BridgeErrorCode::UnsupportedToken)?;
+    let token_mint = bridge.get_token_address(token_id, target_chain_selector).ok_or(BridgeErrorCode::UnsupportedToken)?;
 
     require!(token_mint == &ctx.accounts.token_mint.key(), BridgeErrorCode::DisMatchToken);
 

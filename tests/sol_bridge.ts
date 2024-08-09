@@ -73,6 +73,7 @@ describe("sol_bridge", () => {
   it("add bridgeable token to the bridge", async() => {
     let bridgeData = await program.account.bridge.fetch(bridge);
     const tokenId = 1;
+    const targetChainSelector = 1;
     const tokenAddress = new PublicKey("8NtheYSKWDkCgWoc8HScQFkcCTF1FiFEbbriosZLNmtE");
 
     try {
@@ -83,6 +84,7 @@ describe("sol_bridge", () => {
         });
         const tx = await program.rpc.addToken(
           tokenId, 
+          targetChainSelector,
           tokenAddress, {
             accounts: {
               owner: owner.publicKey,
@@ -106,6 +108,7 @@ describe("sol_bridge", () => {
     let bridgeData = await program.account.bridge.fetch(bridge);
     console.log("tokens->", bridgeData);
     const tokenId = 2;
+    const targetChainSelector = 1;
     const tokenAddress = new PublicKey("5hyJ6h3ABjF7zEBhc32LWT5ZUCkNx4AZkdRzKC1MUHRb");
 
     try {
@@ -116,6 +119,7 @@ describe("sol_bridge", () => {
         });
         const tx = await program.rpc.addToken(
           tokenId, 
+          targetChainSelector,
           tokenAddress, {
             accounts: {
               owner: owner.publicKey,
@@ -140,6 +144,7 @@ describe("sol_bridge", () => {
     console.log("tokens->", bridgeData);
     try {
       const tokenId = 2;
+      const targetChainSelector = 1;
       let listenerId: number;
       const event = await new Promise<Event[E]>(async (res) => {
         listenerId = program.addEventListener("RemoveTokenEvent", (event) => {
@@ -147,6 +152,7 @@ describe("sol_bridge", () => {
         });
         const tx = await program.rpc.removeToken(
           tokenId, 
+          targetChainSelector,
           {
             accounts: {
               owner: owner.publicKey,
@@ -170,6 +176,7 @@ describe("sol_bridge", () => {
     const tokenMint = new PublicKey("8NtheYSKWDkCgWoc8HScQFkcCTF1FiFEbbriosZLNmtE");
 
     const tokenId = 1;
+    const targetChainSelector = 1;
     const amount = 100000000;
 
     const tokenAccount = await getAssociatedTokenAddress(
@@ -192,6 +199,7 @@ describe("sol_bridge", () => {
         });
         const tx = await program.rpc.addLiquidity(
           tokenId,
+          targetChainSelector,
           new anchor.BN(amount), {
             accounts: {
               user: owner.publicKey,
@@ -220,11 +228,13 @@ describe("sol_bridge", () => {
     let bridgeData = await program.account.bridge.fetch(bridge);
     console.log("tokens->", bridgeData.tokens);
     const tokenId = 1;
+    const targetChainSelector = 1;
     const tokenAmount = 1000000000;
 
     try {
       const tx = await program.rpc.updateTokenBalance(
         tokenId, 
+        targetChainSelector,
         new anchor.BN(tokenAmount), 
         true,
         {
@@ -249,6 +259,7 @@ describe("sol_bridge", () => {
     const tokenMint = new PublicKey("8NtheYSKWDkCgWoc8HScQFkcCTF1FiFEbbriosZLNmtE");
 
     const tokenId = 1;
+    const targetChainSelector = 1;
     const sendAmount = 10000000;
 
     const tokenAccount = await getAssociatedTokenAddress(
@@ -272,6 +283,7 @@ describe("sol_bridge", () => {
         });
         const tx = await program.rpc.send(
           tokenId,
+          targetChainSelector,
           new anchor.BN(sendAmount),
           {
             accounts: {
@@ -301,6 +313,7 @@ describe("sol_bridge", () => {
     const tokenMint = new PublicKey("8NtheYSKWDkCgWoc8HScQFkcCTF1FiFEbbriosZLNmtE");
 
     const tokenId = 1;
+    const targetChainSelector = 1;
     const sendAmount = 10000000;
 
     const tokenAccount = await getAssociatedTokenAddress(
@@ -324,6 +337,7 @@ describe("sol_bridge", () => {
         });
         const tx = await program.rpc.messageReceive(
           tokenId,
+          targetChainSelector,
           new anchor.BN(sendAmount),
           {
             accounts: {
@@ -354,6 +368,7 @@ describe("sol_bridge", () => {
     const tokenMint = new PublicKey("8NtheYSKWDkCgWoc8HScQFkcCTF1FiFEbbriosZLNmtE");
 
     const tokenId = 1;
+    const targetChainSelector = 1;
     const withdrawAmount = 10000000;
 
     const tokenAccount = await getAssociatedTokenAddress(
@@ -377,6 +392,7 @@ describe("sol_bridge", () => {
         });
         const tx = await program.rpc.withdrawToken(
           tokenId,
+          targetChainSelector,
           new anchor.BN(withdrawAmount),{
             accounts: {
               bridge,
