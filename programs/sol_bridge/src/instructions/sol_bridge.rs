@@ -7,6 +7,9 @@ use anchor_spl::{
 use crate::{state::*, constants::*, error::*, event::*};
 use solana_program::{program::invoke, system_instruction};
 
+use pyth_solana_receiver_sdk::price_update::{PriceUpdateV2};
+use pyth_solana_receiver_sdk::price_update::get_feed_id_from_hex;
+
 pub fn add_liquidity(ctx: Context<AddLiquidity>, token_id: u16, target_chain_selector: u32,amount: u64) -> Result<()> {
     let bridge = &ctx.accounts.bridge;
     let user = &ctx.accounts.user;
@@ -76,12 +79,24 @@ pub fn send(ctx: Context<Send>, token_id: u16, target_chain_selector: u32, amoun
     let cpi_context = CpiContext::new(token_program.to_account_info(), cpi_accounts);
     token::transfer(cpi_context, amount)?;
 
+    let price_update = &accts.price_update;
+    // get_price_no_older_than will fail if the price update is more than 30 seconds old
+    let maximum_age: u64 = 30;
+    // get_price_no_older_than will fail if the price update is for a different price feed.
+    // This string is the id of the BTC/USD feed. See https://pyth.network/developers/price-feed-ids for all available IDs.
+    let feed_id: [u8; 32] = get_feed_id_from_hex("0xef0d8b6fda2ceba41da15d4095d1da392a0d2f8ed0c6c7bc0f4cfac8c280b56d")?;
+    let price = price_update.get_price_no_older_than(&Clock::get()?, maximum_age, &feed_id)?;
+    msg!("The price is ({} ± {}) * 10^{}", price.price, price.conf, price.exponent);
+    // 2-Format display values rounded to nearest dollar
+    let sol_amount = ((accts.bridge.protocol_fee as u128) * (1000000000000 as u128) / (u64::try_from(price.price).unwrap() as u128) * (1000000000 as u128)) as u64;
+    msg!("The sol amount is {}", sol_amount / 1000);
+
     // transfer protocol fee to vault address
     invoke(
         &system_instruction::transfer(
             &accts.user.key(),
             &accts.vault.key(),
-            accts.bridge.protocol_fee
+            sol_amount / 1000
         ),
         &[
             accts.user.to_account_info().clone(),
@@ -214,6 +229,9 @@ pub struct Send<'info> {
         token::authority = bridge
     )]
     pub bridge_token_account: Box<Account<'info, TokenAccount>>,
+
+    // Add this account to any instruction Context that needs price data.
+    pub price_update: Account<'info, PriceUpdateV2>,
 
     pub token_program: Program<'info, Token>,
     pub system_program: Program<'info, System>,

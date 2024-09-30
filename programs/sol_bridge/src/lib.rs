@@ -11,7 +11,7 @@ use instructions::*;
 pub use state::*;
 pub use event::*;
 
-declare_id!("7xe9EhqT7bQe5T142Zbxt8TxbkArhSFyRjtd8xDD2uAv");
+declare_id!("yfaLTXYWiXgb7V37qx47WKVNpedyuh29KEFcb6jAFve");
 
 #[program]
 pub mod sol_bridge {

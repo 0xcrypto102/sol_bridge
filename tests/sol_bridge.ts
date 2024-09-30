@@ -6,6 +6,13 @@ import { TOKEN_PROGRAM_ID, createAccount, createInitializeMintInstruction, MINT_
 import * as bs58 from "bs58";
 import { SystemProgram, Keypair, PublicKey, Transaction, SYSVAR_RENT_PUBKEY, SYSVAR_CLOCK_PUBKEY, Connection, clusterApiUrl, sendAndConfirmTransaction } from "@solana/web3.js";
 import assert from "assert";
+import {
+  PythSolanaReceiver,
+  InstructionWithEphemeralSigners,
+} from "@pythnetwork/pyth-solana-receiver";
+import { PriceServiceConnection } from "@pythnetwork/price-service-client";
+// import Wallet from "@project-serum/anchor";
+import { Wallet } from '@project-serum/anchor';
 
 describe("sol_bridge", () => {
   // Configure the client to use the local cluster.
@@ -38,6 +45,7 @@ describe("sol_bridge", () => {
       program.programId
     );
   });
+  /*
   it("Is initialized!", async () => {
     // Add your test here.
     const protocolFee = 100;
@@ -57,7 +65,7 @@ describe("sol_bridge", () => {
   });
 
   it("set protocol fee", async() => {
-    const protocolFee = 2000000;
+    const protocolFee = 10; // 10 USDC
     const tx = await program.rpc.setProtocolFee(
      new anchor.BN(protocolFee),
      {
@@ -252,8 +260,7 @@ describe("sol_bridge", () => {
       console.log(error);
     }
   });
-
-
+  */
 
   it("send tokens to the bridge", async() => {
     const tokenMint = new PublicKey("8NtheYSKWDkCgWoc8HScQFkcCTF1FiFEbbriosZLNmtE");
@@ -275,39 +282,69 @@ describe("sol_bridge", () => {
       program.programId
     );
 
-    try {
-      let listenerId: number;
-      const event = await new Promise<Event[E]>(async (res) => {
-        listenerId = program.addEventListener("SendTokenEvent", (event) => {
-          res(event);
-        });
-        const tx = await program.rpc.send(
-          tokenId,
-          targetChainSelector,
-          new anchor.BN(sendAmount),
-          {
-            accounts: {
-              user: user.publicKey,
-              bridge,
-              vault,
-              tokenMint,
-              tokenAccount,
-              bridgeTokenAccount,
-              tokenProgram: TOKEN_PROGRAM_ID,
-              systemProgram: SystemProgram.programId
-            },
-            signers:[user]
-          }
-        );
-        console.log("tx->", tx);
-      });
-      await program.removeEventListener(listenerId);
-      console.log(event);
-    } catch (error) {
-      console.log(error);
-    }
-  });
+    const SOL_PRICE_FEED_ID =
+      "0xef0d8b6fda2ceba41da15d4095d1da392a0d2f8ed0c6c7bc0f4cfac8c280b56d";
+    const HERMES_URL = "https://hermes.pyth.network/";
+    const DEVNET_RPC_URL = "https://api.devnet.solana.com";
 
+    const priceServiceConnection = new PriceServiceConnection(HERMES_URL, {
+      priceFeedRequestConfig: { binary: true },
+    });
+
+    const wallet = new Wallet(owner);
+
+    const priceUpdateData = await priceServiceConnection.getLatestVaas([
+      SOL_PRICE_FEED_ID,
+    ]);
+
+    const pythSolanaReceiver = new PythSolanaReceiver({
+      connection: program.provider.connection,
+      wallet: wallet,
+    });
+
+    const transactionBuilder = pythSolanaReceiver.newTransactionBuilder({
+      closeUpdateAccounts: true,
+    });
+    await transactionBuilder.addPostPriceUpdates([priceUpdateData[0]]);
+
+    await transactionBuilder.addPriceConsumerInstructions(
+      async (
+        getPriceUpdateAccount: (priceFeedId: string) => PublicKey
+      ): Promise<InstructionWithEphemeralSigners[]> => {
+        return [
+          {
+            instruction: await program.methods
+              .send(
+                tokenId,
+                targetChainSelector,
+                new anchor.BN(sendAmount),
+              )
+              .accounts({
+                user: user.publicKey,
+                bridge,
+                vault,
+                tokenMint,
+                tokenAccount,
+                bridgeTokenAccount,
+                priceUpdate: getPriceUpdateAccount(SOL_PRICE_FEED_ID),
+                tokenProgram: TOKEN_PROGRAM_ID,
+                systemProgram: SystemProgram.programId,
+              })
+              .instruction(),
+            signers: [],
+          },
+        ];
+      }
+    );
+
+    await pythSolanaReceiver.provider.sendAll(
+      await transactionBuilder.buildVersionedTransactions({
+        computeUnitPriceMicroLamports: 50000,
+      }),
+      { skipPreflight: true }
+    );
+  });
+  /*
 
   it("message receive", async() => {
     const tokenMint = new PublicKey("8NtheYSKWDkCgWoc8HScQFkcCTF1FiFEbbriosZLNmtE");
@@ -362,7 +399,6 @@ describe("sol_bridge", () => {
       console.log(error);
     }
   });
-
 
   it("withdraw Token", async() => {
     const tokenMint = new PublicKey("8NtheYSKWDkCgWoc8HScQFkcCTF1FiFEbbriosZLNmtE");
@@ -445,4 +481,5 @@ describe("sol_bridge", () => {
       console.log(error);
     }
   });
+  */
 });

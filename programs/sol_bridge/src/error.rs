@@ -16,6 +16,8 @@ pub enum BridgeErrorCode {
     InsufficientBalance,
     #[msg("Invalid message type.")]
     InvalidMessageType,
-    #[msg("The token is already existed")]
+    #[msg("The token is already existed.")]
     AlreadyExist,
+    #[msg("The price feed is invalid.")]
+    InvalidPriceFeed
 }

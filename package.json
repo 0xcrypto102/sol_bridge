@@ -5,8 +5,13 @@
     },
     "dependencies": {
         "@coral-xyz/anchor": "^0.29.0",
+        "@project-serum/anchor": "^0.26.0",
+        "@pythnetwork/client": "^2.22.0",
+        "@pythnetwork/price-service-client": "^1.9.0",
+        "@pythnetwork/pyth-solana-receiver": "^0.8.2",
         "@solana/spl-token": "^0.4.8",
-        "@solana/web3.js": "^1.95.1"
+        "@solana/web3.js": "^1.95.2",
+        "rpc-websockets": "^9.0.4"
     },
     "devDependencies": {
         "@types/bn.js": "^5.1.0",
