@@ -19,5 +19,9 @@ pub enum BridgeErrorCode {
     #[msg("The token is already existed.")]
     AlreadyExist,
     #[msg("The price feed is invalid.")]
-    InvalidPriceFeed
+    InvalidPriceFeed,
+    #[msg("The target balance is overflow.")]
+    Overflow,
+    #[msg("The target balance is underflow.")]
+    Underflow
 }

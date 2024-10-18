@@ -17,45 +17,110 @@ declare_id!("yfaLTXYWiXgb7V37qx47WKVNpedyuh29KEFcb6jAFve");
 pub mod sol_bridge {
     use super::*;
     // owner functions
-    pub fn initialize(ctx: Context<Initialize>, protocol_fee: u64) -> Result<()> {
-        instructions::initialize(ctx, protocol_fee)
+    pub fn initialize(ctx: Context<Initialize>, protocol_fee: u64, chain_selecotr: u64) -> Result<()> {
+        instructions::initialize(ctx, protocol_fee, chain_selecotr)
     }
 
     pub fn set_protocol_fee(ctx: Context<SetProtocolFee>, protocol_fee: u64) -> Result<()> {
         instructions::set_protocol_fee(ctx, protocol_fee)
     }
 
-    pub fn withdraw_token(ctx: Context<WithdrawToken>, token_id: u16, target_chain_selector: u32, amount: u64) -> Result<()> {
-        instructions::withdraw_token(ctx, token_id, target_chain_selector, amount)
+    pub fn withdraw_token(ctx: Context<WithdrawToken>, token_id: String, amount: u64) -> Result<()> {
+        instructions::withdraw_token(ctx, token_id, amount)
     }
 
     pub fn withdraw(ctx: Context<Withdraw>, amount: u64) -> Result<()> {
         instructions::withdraw(ctx, amount)
     }
 
-    pub fn add_token(ctx: Context<ManageToken>, token_id: u16, target_chain_selector: u32, token_mint: Pubkey) -> Result<()> {
-        instructions::add_token(ctx, token_id, target_chain_selector,token_mint)
+    pub fn add_token(
+        ctx: Context<ManageToken>, 
+        local_token: Pubkey, 
+        remote_chain_selector: u64, 
+        remote_token: String
+    ) -> Result<()> {
+        instructions::add_token(
+            ctx, 
+            local_token, 
+            remote_chain_selector,
+            remote_token
+        )
     }
 
-    pub fn remove_token(ctx: Context<ManageToken>, token_id: u16, target_chain_selector: u32) -> Result<()> {
-        instructions::remove_token(ctx, token_id, target_chain_selector)
+    pub fn remove_token(
+        ctx: Context<ManageToken>, 
+        local_token: Pubkey, 
+        remote_chain_selector: u64, 
+        remote_token: String
+    ) -> Result<()> {
+        instructions::remove_token(
+            ctx, 
+            local_token, 
+            remote_chain_selector, 
+            remote_token
+        )
     }
 
-    pub fn update_token_balance(ctx: Context<ManageToken>, token_id: u16, target_chain_selector: u32, amount: u64, flag: bool) -> Result<()> {
-        instructions::update_token_balance(ctx, token_id, target_chain_selector,amount, flag)
+    pub fn update_token_balance(
+        ctx: Context<ManageToken>, 
+        local_token: Pubkey, 
+        remote_chain_selector: u64, 
+        remote_token: String, 
+        amount: u64, 
+        flag: bool
+    ) -> Result<()> {
+        instructions::update_token_balance(
+            ctx, 
+            local_token, 
+            remote_chain_selector, 
+            remote_token, 
+            amount, 
+            flag
+        )
     }
 
-    pub fn add_liquidity(ctx: Context<AddLiquidity>, token_id: u16, target_chain_selector: u32,amount: u64) -> Result<()> {
-        instructions::add_liquidity(ctx, token_id, target_chain_selector,amount)
+    pub fn add_liquidity(
+        ctx: Context<AddLiquidity>, 
+        amount: u64, 
+        remote_chain_selector: u64, 
+        remote_token: String
+    ) -> Result<()> {
+        instructions::add_liquidity(
+            ctx, 
+            amount, 
+            remote_chain_selector,
+            remote_token
+        )
     }
 
-    pub fn message_receive(ctx: Context<MessageReceive>, token_id: u16, target_chain_selector: u32, amount: u64) -> Result<()> {
-        instructions::message_receive(ctx, token_id, target_chain_selector, amount)
+    pub fn message_receive(
+        ctx: Context<MessageReceive>, 
+        token_id: String, 
+        source_chain_selector: u64, 
+        amount: u64
+    ) -> Result<()> {
+        instructions::message_receive(
+            ctx, 
+            token_id, 
+            source_chain_selector, 
+            amount
+        )
     }
 
     //  user function
-    pub fn send(ctx: Context<Send>, token_id: u16, target_chain_selector: u32, amount: u64) -> Result<()> {
-        instructions::send(ctx, token_id, target_chain_selector, amount)
+    pub fn send(ctx: Context<Send>, 
+        amount: u64, 
+        remote_bridge: String,
+        remote_chain_selector: u64, 
+        remote_token: String
+    ) -> Result<()> {
+        instructions::send(
+            ctx, 
+            amount, 
+            remote_bridge, 
+            remote_chain_selector,
+            remote_token
+        )
     }
     
 }

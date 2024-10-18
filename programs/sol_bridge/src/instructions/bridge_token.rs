@@ -2,39 +2,52 @@ use anchor_lang::prelude::*;
 
 use crate::{state::*, constants::*, error::*, event::*};
 
-pub fn add_token(ctx: Context<ManageToken>, token_id: u16, target_chain_selector: u32,token_mint: Pubkey) -> Result<()> {
+pub fn add_token(
+  ctx: Context<ManageToken>,  
+  local_token: Pubkey,        // Local token address (on Solana)
+  remote_chain_selector: u64, // EVM chain selector (uint64)
+  remote_token: String
+) -> Result<()> {
   let bridge = &mut ctx.accounts.bridge;
   require!(bridge.owner == *ctx.accounts.owner.key, BridgeErrorCode::InvalidOwner);
-  let _ = bridge.add_token(token_id, target_chain_selector, token_mint);
+  let token_id = bridge.add_token(local_token, remote_chain_selector, remote_token.clone())?;
 
   // Emit event
   emit!(AddTokenEvent {
-      token_id: token_id,
-      token_mint: token_mint,
+    local_token,
+    remote_chain_selector,
+    remote_token,
+    token_id
   });
 
   Ok(())
 }
 
 
-pub fn remove_token(ctx: Context<ManageToken>, token_id: u16, target_chain_selector: u32) -> Result<()> {
+pub fn remove_token(
+  ctx: Context<ManageToken>,
+  local_token: Pubkey,        // Local token address (on Solana)
+  remote_chain_selector: u64, // EVM chain selector (uint64)
+  remote_token: String
+) -> Result<()> {
   let bridge = &mut ctx.accounts.bridge;
   require!(bridge.owner == *ctx.accounts.owner.key, BridgeErrorCode::InvalidOwner);
-  bridge.remove_token(token_id, target_chain_selector);
+  let token_id = bridge.remove_token(local_token, remote_chain_selector, remote_token)?;
 
   // Emit event
   emit!(RemoveTokenEvent {
-      token_id: token_id,
+    token_id,
+    local_token
   });
 
   Ok(())
 }
 
-pub fn update_token_balance(ctx: Context<ManageToken>, token_id: u16, target_chain_selector: u32, token_amount: u64, flag: bool) -> Result<()> {
+pub fn update_token_balance(ctx: Context<ManageToken>, local_token: Pubkey, remote_chain_selector: u64, remote_token: String, amount: u64, flag: bool) -> Result<()> {
   let bridge = &mut ctx.accounts.bridge;
   require!(bridge.owner == *ctx.accounts.owner.key, BridgeErrorCode::InvalidOwner);
   // Update the target balance
-  let _target_balance = bridge.update_balance(token_id, target_chain_selector,token_amount, flag);
+  let _target_balance = bridge.update_balance(local_token, remote_chain_selector, remote_token, amount, flag);
 
   Ok(())
 }

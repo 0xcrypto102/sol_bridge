@@ -9,10 +9,11 @@ use solana_program::{program::invoke_signed, system_instruction};
 
 use std::mem::size_of;
 
-pub fn initialize(ctx: Context<Initialize>, protocol_fee: u64) -> Result<()> {
+pub fn initialize(ctx: Context<Initialize>, protocol_fee: u64, chain_selecotr: u64) -> Result<()> {
     let accts = ctx.accounts;
     accts.bridge.owner = accts.owner.key();
     accts.bridge.protocol_fee = protocol_fee;
+    accts.bridge.chain_selector = chain_selecotr;
     accts.bridge.vault = accts.vault.key();
     
     Ok(())
@@ -47,14 +48,13 @@ pub fn withdraw(ctx: Context<Withdraw>, amount: u64) -> Result<()> {
     )?;
 
     emit!(WithdrawEvent {
-        amount: amount,
         beneficiary: accts.beneficiary.key(),
     });
 
     Ok(())
 }
 
-pub fn withdraw_token(ctx: Context<WithdrawToken>, token_id: u16, target_chain_selector: u32, amount: u64) -> Result<()> {
+pub fn withdraw_token(ctx: Context<WithdrawToken>, token_id: String, amount: u64) -> Result<()> {
     let bridge = &ctx.accounts.bridge;
 
     require!(bridge.owner == *ctx.accounts.owner.key, BridgeErrorCode::InvalidOwner);
@@ -63,7 +63,7 @@ pub fn withdraw_token(ctx: Context<WithdrawToken>, token_id: u16, target_chain_s
     require!(bridge.token_ids.contains(&token_id), BridgeErrorCode::UnsupportedToken);
 
     // Get the token address
-    let token_mint = bridge.get_token_address(token_id, target_chain_selector).ok_or(BridgeErrorCode::UnsupportedToken)?;
+    let token_mint = bridge.get_token_address(token_id).ok_or(BridgeErrorCode::UnsupportedToken)?;
 
     require!(token_mint == &ctx.accounts.token_mint.key(), BridgeErrorCode::DisMatchToken);
 
@@ -87,12 +87,12 @@ pub fn withdraw_token(ctx: Context<WithdrawToken>, token_id: u16, target_chain_s
     let cpi_context = CpiContext::new(token_program.to_account_info(), cpi_accounts);
     token::transfer(cpi_context.with_signer(signer), amount)?;
 
-    emit!(WithdrawTokenEvent {
-        vault: bridge_token_account.key(),
-        to_address: beneficiary_token_account.key(),
-        token_id,
-        amount,
-    });
+    emit!(
+        WithdrawTokenEvent {
+            token: *token_mint,
+            amount,
+        }
+    );
 
     Ok(())
 }
