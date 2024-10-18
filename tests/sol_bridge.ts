@@ -30,6 +30,8 @@ describe("sol_bridge", () => {
 
   type Event = anchor.IdlEvents<typeof program["idl"]>;
 
+  let chainSelector = 1; // test value, you can modify value in your product
+
   it("Get PDA", async() => {
     [bridge, bridgeBump] = await anchor.web3.PublicKey.findProgramAddress(
       [
@@ -45,12 +47,12 @@ describe("sol_bridge", () => {
       program.programId
     );
   });
-  /*
   it("Is initialized!", async () => {
     // Add your test here.
     const protocolFee = 100;
     const tx = await program.rpc.initialize(
       new anchor.BN(protocolFee),
+      new anchor.BN(chainSelector),
       {
         accounts: {
           bridge,
@@ -65,7 +67,7 @@ describe("sol_bridge", () => {
   });
 
   it("set protocol fee", async() => {
-    const protocolFee = 10; // 10 USDC
+    const protocolFee = 10000000; // 0.01 Sol
     const tx = await program.rpc.setProtocolFee(
      new anchor.BN(protocolFee),
      {
@@ -78,11 +80,12 @@ describe("sol_bridge", () => {
     );
     console.log("tx->", tx);
   });
+
   it("add bridgeable token to the bridge", async() => {
     let bridgeData = await program.account.bridge.fetch(bridge);
-    const tokenId = 1;
-    const targetChainSelector = 1;
-    const tokenAddress = new PublicKey("8NtheYSKWDkCgWoc8HScQFkcCTF1FiFEbbriosZLNmtE");
+    const remoteChainSelector = 56;
+    const localToken = new PublicKey("8NtheYSKWDkCgWoc8HScQFkcCTF1FiFEbbriosZLNmtE");
+    const remoteToken = "0x55d398326f99059fF775485246999027B3197955"; // bsc usdt address
 
     try {
       let listenerId: number;
@@ -91,9 +94,9 @@ describe("sol_bridge", () => {
           res(event);
         });
         const tx = await program.rpc.addToken(
-          tokenId, 
-          targetChainSelector,
-          tokenAddress, {
+          localToken, 
+          new anchor.BN(remoteChainSelector),
+          remoteToken, {
             accounts: {
               owner: owner.publicKey,
               bridge
@@ -115,9 +118,9 @@ describe("sol_bridge", () => {
   it("add bridgeable token to the bridge", async() => {
     let bridgeData = await program.account.bridge.fetch(bridge);
     console.log("tokens->", bridgeData);
-    const tokenId = 2;
-    const targetChainSelector = 1;
-    const tokenAddress = new PublicKey("5hyJ6h3ABjF7zEBhc32LWT5ZUCkNx4AZkdRzKC1MUHRb");
+    const remoteChainSelector = 1;
+    const localToken = new PublicKey("5hyJ6h3ABjF7zEBhc32LWT5ZUCkNx4AZkdRzKC1MUHRb");
+    const remoteToken = "0xdac17f958d2ee523a2206206994597c13d831ec7"; //eth usdt address
 
     try {
       let listenerId: number;
@@ -126,9 +129,9 @@ describe("sol_bridge", () => {
           res(event);
         });
         const tx = await program.rpc.addToken(
-          tokenId, 
-          targetChainSelector,
-          tokenAddress, {
+          localToken, 
+          new anchor.BN(remoteChainSelector),
+          remoteToken, {
             accounts: {
               owner: owner.publicKey,
               bridge
@@ -146,21 +149,25 @@ describe("sol_bridge", () => {
       console.log(error);
     }
   });
+
 
   it("remove bridgeable token from the bridge", async() => {
     let bridgeData = await program.account.bridge.fetch(bridge);
     console.log("tokens->", bridgeData);
     try {
-      const tokenId = 2;
-      const targetChainSelector = 1;
+      const remoteChainSelector = 1;
+      const localToken = new PublicKey("5hyJ6h3ABjF7zEBhc32LWT5ZUCkNx4AZkdRzKC1MUHRb");
+      const remoteToken = "0xdac17f958d2ee523a2206206994597c13d831ec7"; //eth usdt address
+  
       let listenerId: number;
       const event = await new Promise<Event[E]>(async (res) => {
         listenerId = program.addEventListener("RemoveTokenEvent", (event) => {
           res(event);
         });
         const tx = await program.rpc.removeToken(
-          tokenId, 
-          targetChainSelector,
+          localToken,
+          new anchor.BN(remoteChainSelector),
+          remoteToken, 
           {
             accounts: {
               owner: owner.publicKey,
@@ -180,22 +187,24 @@ describe("sol_bridge", () => {
     }
   });
 
-  it("add liquidity by owner", async() => {
-    const tokenMint = new PublicKey("8NtheYSKWDkCgWoc8HScQFkcCTF1FiFEbbriosZLNmtE");
 
-    const tokenId = 1;
-    const targetChainSelector = 1;
+  it("add liquidity by owner", async() => {
+
+    const remoteChainSelector = 56;
+    const localToken = new PublicKey("8NtheYSKWDkCgWoc8HScQFkcCTF1FiFEbbriosZLNmtE");
+    const remoteToken = "0x55d398326f99059fF775485246999027B3197955"; // bsc usdt address
+
     const amount = 100000000;
 
     const tokenAccount = await getAssociatedTokenAddress(
-      tokenMint,
+      localToken,
       owner.publicKey
     );
 
     const [bridgeTokenAccount, _] = await anchor.web3.PublicKey.findProgramAddress(
       [
         Buffer.from("BRIDGE_TOKEN_VAULT_SEED"),
-        tokenMint.toBuffer()
+        localToken.toBuffer()
       ],
       program.programId
     );
@@ -206,13 +215,13 @@ describe("sol_bridge", () => {
           res(event);
         });
         const tx = await program.rpc.addLiquidity(
-          tokenId,
-          targetChainSelector,
-          new anchor.BN(amount), {
+          new anchor.BN(amount), 
+          new anchor.BN(remoteChainSelector),
+          remoteToken, {
             accounts: {
               user: owner.publicKey,
               bridge,
-              tokenMint,
+              localToken,
               tokenAccount,
               bridgeTokenAccount,
               tokenProgram: TOKEN_PROGRAM_ID,
@@ -235,14 +244,17 @@ describe("sol_bridge", () => {
   it("update target token's balance", async() => {
     let bridgeData = await program.account.bridge.fetch(bridge);
     console.log("tokens->", bridgeData.tokens);
-    const tokenId = 1;
-    const targetChainSelector = 1;
+
+    const remoteChainSelector = 56;
+    const localToken = new PublicKey("8NtheYSKWDkCgWoc8HScQFkcCTF1FiFEbbriosZLNmtE");
+    const remoteToken = "0x55d398326f99059fF775485246999027B3197955"; // bsc usdt address
     const tokenAmount = 1000000000;
 
     try {
       const tx = await program.rpc.updateTokenBalance(
-        tokenId, 
-        targetChainSelector,
+        localToken,
+        new anchor.BN(remoteChainSelector),
+        remoteToken,
         new anchor.BN(tokenAmount), 
         true,
         {
@@ -260,108 +272,65 @@ describe("sol_bridge", () => {
       console.log(error);
     }
   });
-  */
 
   it("send tokens to the bridge", async() => {
-    const tokenMint = new PublicKey("8NtheYSKWDkCgWoc8HScQFkcCTF1FiFEbbriosZLNmtE");
-
-    const tokenId = 1;
-    const targetChainSelector = 1;
+    const localToken = new PublicKey("8NtheYSKWDkCgWoc8HScQFkcCTF1FiFEbbriosZLNmtE");
+    const remoteToken = "0x55d398326f99059fF775485246999027B3197955"; // bsc usdt address
+    const remoteBridge = "brigeaddress0x2394290389082395234"; // test value, modify this value in product
+    const remoteChainSelector = 56;
     const sendAmount = 10000000;
 
     const tokenAccount = await getAssociatedTokenAddress(
-      tokenMint,
+      localToken,
       user.publicKey
     );
 
     const [bridgeTokenAccount, _] = await anchor.web3.PublicKey.findProgramAddress(
       [
         Buffer.from("BRIDGE_TOKEN_VAULT_SEED"),
-        tokenMint.toBuffer()
+        localToken.toBuffer()
       ],
       program.programId
     );
 
-    const SOL_PRICE_FEED_ID =
-      "0xef0d8b6fda2ceba41da15d4095d1da392a0d2f8ed0c6c7bc0f4cfac8c280b56d";
-    const HERMES_URL = "https://hermes.pyth.network/";
-    const DEVNET_RPC_URL = "https://api.devnet.solana.com";
-
-    const priceServiceConnection = new PriceServiceConnection(HERMES_URL, {
-      priceFeedRequestConfig: { binary: true },
+    const tx = await program.rpc.send(
+      new anchor.BN(sendAmount),
+      remoteBridge,
+      new anchor.BN(remoteChainSelector),
+      remoteToken,
+      {
+      accounts: {
+        user: user.publicKey,
+        bridge,
+        vault,
+        tokenMint: localToken,
+        tokenAccount,
+        bridgeTokenAccount,
+        tokenProgram: TOKEN_PROGRAM_ID,
+        systemProgram: SystemProgram.programId,
+      },
+      signers: [user]
     });
-
-    const wallet = new Wallet(owner);
-
-    const priceUpdateData = await priceServiceConnection.getLatestVaas([
-      SOL_PRICE_FEED_ID,
-    ]);
-
-    const pythSolanaReceiver = new PythSolanaReceiver({
-      connection: program.provider.connection,
-      wallet: wallet,
-    });
-
-    const transactionBuilder = pythSolanaReceiver.newTransactionBuilder({
-      closeUpdateAccounts: true,
-    });
-    await transactionBuilder.addPostPriceUpdates([priceUpdateData[0]]);
-
-    await transactionBuilder.addPriceConsumerInstructions(
-      async (
-        getPriceUpdateAccount: (priceFeedId: string) => PublicKey
-      ): Promise<InstructionWithEphemeralSigners[]> => {
-        return [
-          {
-            instruction: await program.methods
-              .send(
-                tokenId,
-                targetChainSelector,
-                new anchor.BN(sendAmount),
-              )
-              .accounts({
-                user: user.publicKey,
-                bridge,
-                vault,
-                tokenMint,
-                tokenAccount,
-                bridgeTokenAccount,
-                priceUpdate: getPriceUpdateAccount(SOL_PRICE_FEED_ID),
-                tokenProgram: TOKEN_PROGRAM_ID,
-                systemProgram: SystemProgram.programId,
-              })
-              .instruction(),
-            signers: [],
-          },
-        ];
-      }
-    );
-
-    await pythSolanaReceiver.provider.sendAll(
-      await transactionBuilder.buildVersionedTransactions({
-        computeUnitPriceMicroLamports: 50000,
-      }),
-      { skipPreflight: true }
-    );
+    console.log("tx->", tx);
   });
-  /*
+
 
   it("message receive", async() => {
-    const tokenMint = new PublicKey("8NtheYSKWDkCgWoc8HScQFkcCTF1FiFEbbriosZLNmtE");
+    const localToken = new PublicKey("8NtheYSKWDkCgWoc8HScQFkcCTF1FiFEbbriosZLNmtE");
 
-    const tokenId = 1;
-    const targetChainSelector = 1;
+    const tokenId = '62363130373235323438643362363237633363386366386236666634616637663939646436353736376165316537663630653161626361653263363132643565';
+    const remoteChainSelector = 56;
     const sendAmount = 10000000;
 
     const tokenAccount = await getAssociatedTokenAddress(
-      tokenMint,
+      localToken,
       user.publicKey
     );
 
     const [bridgeTokenAccount, _] = await anchor.web3.PublicKey.findProgramAddress(
       [
         Buffer.from("BRIDGE_TOKEN_VAULT_SEED"),
-        tokenMint.toBuffer()
+        localToken.toBuffer()
       ],
       program.programId
     );
@@ -374,13 +343,13 @@ describe("sol_bridge", () => {
         });
         const tx = await program.rpc.messageReceive(
           tokenId,
-          targetChainSelector,
+          new anchor.BN(remoteChainSelector),
           new anchor.BN(sendAmount),
           {
             accounts: {
               owner: owner.publicKey,
               bridge,
-              tokenMint,
+              tokenMint: localToken,
               user: user.publicKey,
               userTokenAccount:tokenAccount,
               bridgeTokenAccount,
@@ -401,21 +370,20 @@ describe("sol_bridge", () => {
   });
 
   it("withdraw Token", async() => {
-    const tokenMint = new PublicKey("8NtheYSKWDkCgWoc8HScQFkcCTF1FiFEbbriosZLNmtE");
+    const localToken = new PublicKey("8NtheYSKWDkCgWoc8HScQFkcCTF1FiFEbbriosZLNmtE");
 
-    const tokenId = 1;
-    const targetChainSelector = 1;
+    const tokenId = '62363130373235323438643362363237633363386366386236666634616637663939646436353736376165316537663630653161626361653263363132643565';
     const withdrawAmount = 10000000;
 
     const tokenAccount = await getAssociatedTokenAddress(
-      tokenMint,
+      localToken,
       owner.publicKey
     );
 
     const [bridgeTokenAccount, _] = await anchor.web3.PublicKey.findProgramAddress(
       [
         Buffer.from("BRIDGE_TOKEN_VAULT_SEED"),
-        tokenMint.toBuffer()
+        localToken.toBuffer()
       ],
       program.programId
     );
@@ -428,12 +396,11 @@ describe("sol_bridge", () => {
         });
         const tx = await program.rpc.withdrawToken(
           tokenId,
-          targetChainSelector,
           new anchor.BN(withdrawAmount),{
             accounts: {
               bridge,
               owner: owner.publicKey,
-              tokenMint,
+              tokenMint: localToken,
               bridgeTokenAccount,
               beneficiaryTokenAccount: tokenAccount,
               tokenProgram: TOKEN_PROGRAM_ID,
@@ -451,7 +418,7 @@ describe("sol_bridge", () => {
       console.log(error);
     }
   });
-
+  
   it("withdraw fee sol", async() => {
     const withdrawAmount = 100000;
 
@@ -481,5 +448,4 @@ describe("sol_bridge", () => {
       console.log(error);
     }
   });
-  */
 });
