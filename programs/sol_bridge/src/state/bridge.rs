@@ -14,6 +14,7 @@ pub struct Bridge {
     pub chain_selector: u64,
     pub token_ids: Vec<String>,
     pub token_addresses: Vec<Pubkey>,
+    pub target_token_addresses: Vec<String>,
     pub target_balances: Vec<u64>,
     pub target_chain_selectors: Vec<u64>,
 }
@@ -100,6 +101,7 @@ impl Bridge {
         // Add the token if it doesn't already exist
         self.token_ids.push(token_id.clone());
         self.token_addresses.push(local_token);
+        self.target_token_addresses.push(remote_token);
         self.target_balances.push(0); // Initialize balance with 0
         self.target_chain_selectors.push(remote_chain_selector); // Store the chain selector
         
@@ -133,6 +135,7 @@ impl Bridge {
                 self.token_ids.remove(index);
                 self.token_addresses.remove(index);
                 self.target_balances.remove(index);
+                self.target_token_addresses.remove(index);
                 self.target_chain_selectors.remove(index);
                 Ok(token_id)
             } else {

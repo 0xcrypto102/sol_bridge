@@ -52,6 +52,28 @@ pub fn update_token_balance(ctx: Context<ManageToken>, local_token: Pubkey, remo
   Ok(())
 }
 
+pub fn get_token_id(
+  ctx: Context<ManageToken>,  
+  local_token: Pubkey,        // Local token address (on Solana)
+  remote_chain_selector: u64, // EVM chain selector (uint64)
+  remote_token: String
+) -> Result<String> {
+  let bridge = &mut ctx.accounts.bridge;
+
+  // Encode local_token as bytes
+  let binding = local_token.to_string();
+  let local_token_bytes = binding.as_bytes();
+
+  let token_id = bridge.get_token_id(
+    local_token_bytes,       // Local token as bytes
+    bridge.chain_selector,      // Solana chain selector (from Bridge struct)
+    remote_chain_selector,    // EVM chain selector
+    remote_token.as_bytes()   // Remote token as bytes
+  )?;
+
+  Ok(token_id)
+}
+
 #[derive(Accounts)]
 pub struct ManageToken<'info> {
   #[account(mut)]

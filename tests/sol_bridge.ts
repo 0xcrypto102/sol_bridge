@@ -30,7 +30,7 @@ describe("sol_bridge", () => {
 
   type Event = anchor.IdlEvents<typeof program["idl"]>;
 
-  let chainSelector = 1; // test value, you can modify value in your product
+  let chainSelector = 1601511254; // test value, you can modify value in your product
 
   it("Get PDA", async() => {
     [bridge, bridgeBump] = await anchor.web3.PublicKey.findProgramAddress(
@@ -47,6 +47,35 @@ describe("sol_bridge", () => {
       program.programId
     );
   });
+
+  
+  it("Get Token ID", async() => {
+    [bridge, bridgeBump] = await anchor.web3.PublicKey.findProgramAddress(
+      [
+        Buffer.from("BRIDGE_SEED")
+      ],
+      program.programId
+    );
+    const bridgeData = await program.account.bridge.fetch(bridge);
+
+    const tokenIds = bridgeData.tokenIds;
+    const tokenAddresses = bridgeData.tokenAddresses;
+    const targetTokenAddresses = bridgeData.targetTokenAddresses;
+    const targetChainSelectors = bridgeData.targetChainSelectors;
+
+    const remoteChainSelector = 56;
+    const localToken = new PublicKey("8NtheYSKWDkCgWoc8HScQFkcCTF1FiFEbbriosZLNmtE");
+    const remoteToken = "0x55d398326f99059fF775485246999027B3197955"; // bsc usdt address
+
+    for(let i = 0; i<tokenIds.length; i++) {
+      if(targetTokenAddresses[i] == remoteToken && Number(targetChainSelectors[i]) == remoteChainSelector && tokenAddresses[i].toString() == localToken.toString()) {
+        const tokenId = tokenIds[i];
+
+        console.log(tokenId)
+      }
+    }
+  });
+
   it("Is initialized!", async () => {
     // Add your test here.
     const protocolFee = 100;
@@ -313,7 +342,6 @@ describe("sol_bridge", () => {
     });
     console.log("tx->", tx);
   });
-
 
   it("message receive", async() => {
     const localToken = new PublicKey("8NtheYSKWDkCgWoc8HScQFkcCTF1FiFEbbriosZLNmtE");
