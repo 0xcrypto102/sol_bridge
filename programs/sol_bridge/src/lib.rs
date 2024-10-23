@@ -11,7 +11,7 @@ use instructions::*;
 pub use state::*;
 pub use event::*;
 
-declare_id!("H2XJxMbnJgGBCqt7h6HRg1jDyDRqYDgUXDJBTsMf1ad9");
+declare_id!("6gUrEYhacs6ZeHZFfDEBih1PRY7417vTYZjbfD62mkjV");
 
 #[program]
 pub mod sol_bridge {
@@ -32,21 +32,6 @@ pub mod sol_bridge {
     pub fn withdraw(ctx: Context<Withdraw>, amount: u64) -> Result<()> {
         instructions::withdraw(ctx, amount)
     }
-
-    pub fn get_token_id(
-        ctx: Context<ManageToken>, 
-        local_token: Pubkey, 
-        remote_chain_selector: u64, 
-        remote_token: String
-    ) -> Result<String> {
-        instructions::get_token_id(
-            ctx, 
-            local_token, 
-            remote_chain_selector,
-            remote_token
-        )
-    }
-
 
     pub fn add_token(
         ctx: Context<ManageToken>, 
@@ -75,25 +60,7 @@ pub mod sol_bridge {
             remote_token
         )
     }
-
-    pub fn update_token_balance(
-        ctx: Context<ManageToken>, 
-        local_token: Pubkey, 
-        remote_chain_selector: u64, 
-        remote_token: String, 
-        amount: u64, 
-        flag: bool
-    ) -> Result<()> {
-        instructions::update_token_balance(
-            ctx, 
-            local_token, 
-            remote_chain_selector, 
-            remote_token, 
-            amount, 
-            flag
-        )
-    }
-
+  
     pub fn add_liquidity(
         ctx: Context<AddLiquidity>, 
         amount: u64, 

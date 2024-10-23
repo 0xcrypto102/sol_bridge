@@ -7,8 +7,6 @@ use anchor_spl::{
 use crate::{state::*, constants::*, error::*, event::*};
 use solana_program::{program::invoke_signed, system_instruction};
 
-use std::mem::size_of;
-
 pub fn initialize(ctx: Context<Initialize>, protocol_fee: u64, chain_selecotr: u64) -> Result<()> {
     let accts = ctx.accounts;
     accts.bridge.owner = accts.owner.key();

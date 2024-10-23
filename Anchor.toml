@@ -5,7 +5,7 @@ seeds = false
 skip-lint = false
 
 [programs.devnet]
-sol_bridge = "H2XJxMbnJgGBCqt7h6HRg1jDyDRqYDgUXDJBTsMf1ad9"
+sol_bridge = "6gUrEYhacs6ZeHZFfDEBih1PRY7417vTYZjbfD62mkjV"
 
 [registry]
 url = "https://api.apr.dev"

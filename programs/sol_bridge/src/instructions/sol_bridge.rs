@@ -89,10 +89,6 @@ pub fn send(
 
     require!(token_address == &local_token, BridgeErrorCode::DisMatchToken);
 
-    let target_balance = accts.bridge.get_target_balance(token_id)?;
-
-    require!(target_balance > amount, BridgeErrorCode::InsufficientBalance);
-
     let token_program = &accts.token_program;
     let token_account = &accts.token_account;
     let bridge_token_account = &accts.bridge_token_account;

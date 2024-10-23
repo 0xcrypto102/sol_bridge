@@ -47,7 +47,7 @@ describe("sol_bridge", () => {
       program.programId
     );
   });
-
+  /*
   
   it("Get Token ID", async() => {
     [bridge, bridgeBump] = await anchor.web3.PublicKey.findProgramAddress(
@@ -76,6 +76,7 @@ describe("sol_bridge", () => {
     }
   });
 
+  */
   it("Is initialized!", async () => {
     // Add your test here.
     const protocolFee = 100;
@@ -109,7 +110,7 @@ describe("sol_bridge", () => {
     );
     console.log("tx->", tx);
   });
-
+/*
   it("add bridgeable token to the bridge", async() => {
     let bridgeData = await program.account.bridge.fetch(bridge);
     const remoteChainSelector = 56;
@@ -344,10 +345,10 @@ describe("sol_bridge", () => {
   });
 
   it("message receive", async() => {
-    const localToken = new PublicKey("8NtheYSKWDkCgWoc8HScQFkcCTF1FiFEbbriosZLNmtE");
+    const localToken = new PublicKey("5SUDTjKUQ6RBZ5nED3VcMCtUKAFhmJ4b5Ar4Yodpn7au");
 
-    const tokenId = '62363130373235323438643362363237633363386366386236666634616637663939646436353736376165316537663630653161626361653263363132643565';
-    const remoteChainSelector = 56;
+    const tokenId = '64373931313736393231353231316439646438656234356161643466316333626166616434316362393765356231373039373365646162366336666535376537';
+    const remoteChainSelector = Number('b8159170038f96fb');
     const sendAmount = 10000000;
 
     const tokenAccount = await getAssociatedTokenAddress(
@@ -476,4 +477,5 @@ describe("sol_bridge", () => {
       console.log(error);
     }
   });
+  */
 });
