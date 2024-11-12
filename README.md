@@ -1,21 +1,16 @@
+# 🚀 Getting Started
+
+### Prerequisites
+
+- **Rust**: Make sure you have the latest version of Rust installed. You can install it using [rustup](https://rustup.rs/).
+- **Anchor Framework**: This project uses [Anchor](https://project-serum.github.io/anchor/getting-started/installation.html), a framework for Solana smart contracts.
+- **Solana CLI**: Install the Solana CLI for interacting with the Solana network.
+- **Node.js & Yarn**: For running deployment scripts and interacting with the smart contract.
+  
 # Solana-EVM Bridge Contract
 
 This project is a Solana-EVM bridge contract designed to enable the transfer of assets and data between the Solana blockchain and any Ethereum-compatible EVM (Ethereum, Binance Smart Chain, Polygon, etc.). 
 The bridge facilitates seamless interactions and cross-chain communication, allowing assets such as SPL tokens on Solana to be represented and utilized on EVM-compatible chains and vice versa.
-
-## Table of Contents
-
-1. [Overview](#overview)
-2. [Architecture](#architecture)
-3. [Features](#features)
-4. [Installation](#installation)
-5. [Deployment](#deployment)
-6. [Usage](#usage)
-7. [Unit Tests](#unit-tests)
-8. [Testing](#testing)
-9. [Troubleshooting](#troubleshooting)
-10. [Contributing](#contributing)
-11. [License](#license)
 
 ## Overview
 
@@ -54,4 +49,51 @@ The architecture of the Solana-EVM Bridge consists of:
 
 ```bash
 git clone https://github.com/0xcrypto102/sol_bridge.git
-cd solana-evm-bridge
+cd sol_bridg
+
+```
+
+### Install Dependencies
+
+```bash
+npm install
+```
+
+## Deployment
+
+### Deploy Solana Program
+
+- Navigate to the Solana program directory and build the program
+```bash
+anchor build
+```
+- Deploy the program
+  ```bash
+  solana program deploy ./target/deploy/sol_bridge.so
+  ```
+
+## Unit-test
+
+### Solana Program Tests
+
+Test File: tests/sol_bridge.ts
+
+Commands:
+```bash
+anchor run test
+```
+
+## 🤝 Contributing
+Contributions are welcome! If you have suggestions for improving the project, please create an issue or submit a pull request.
+
+Fork the project.
+Create a new branch (git checkout -b feature/your-feature).
+Commit your changes (git commit -m 'Add some feature').
+Push to the branch (git push origin feature/your-feature).
+Open a pull request.
+
+## 📜 License
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## 🙋‍♂️ Support
+If you encounter any issues or have questions about the project, feel free to open an issue or reach out to the maintainer.
