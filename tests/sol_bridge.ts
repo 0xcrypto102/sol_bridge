@@ -24,9 +24,9 @@ describe("sol_bridge", () => {
   let bridgeBump, vaultBump: Number;
 
   // Bmed1qoe6u8VxmJ5p6SW77fb7LiSqWmQdTtKTz5dyh62
-  let owner = Keypair.fromSecretKey(bs58.decode("2LU9Gir9pDVEsUWrRHLUUdPaVM642EmMGubgyZg2LNYk1uyD4LNRR5HshCENmfTUD3nPMeN7FCJKxEdu48YSEpta"));
+  let owner = Keypair.fromSecretKey(bs58.decode(""));
 
-  let user = Keypair.fromSecretKey(bs58.decode("3wYcRWgA7kpb7E931PTrbNo8LfnCBNvck7KsK2MscrA8WbiiuzsbwumFb7EeqV6S8Cpc5u7zjPtxaTRL13xaAY5P"));
+  let user = Keypair.fromSecretKey(bs58.decode(""));
 
   type Event = anchor.IdlEvents<typeof program["idl"]>;
 
@@ -47,7 +47,6 @@ describe("sol_bridge", () => {
       program.programId
     );
   });
-  /*
   
   it("Get Token ID", async() => {
     [bridge, bridgeBump] = await anchor.web3.PublicKey.findProgramAddress(
@@ -76,7 +75,6 @@ describe("sol_bridge", () => {
     }
   });
 
-  */
   it("Is initialized!", async () => {
     // Add your test here.
     const protocolFee = 100;
@@ -110,7 +108,7 @@ describe("sol_bridge", () => {
     );
     console.log("tx->", tx);
   });
-/*
+  
   it("add bridgeable token to the bridge", async() => {
     let bridgeData = await program.account.bridge.fetch(bridge);
     const remoteChainSelector = 56;
@@ -216,7 +214,6 @@ describe("sol_bridge", () => {
       console.log(error);
     }
   });
-
 
   it("add liquidity by owner", async() => {
 
@@ -477,5 +474,4 @@ describe("sol_bridge", () => {
       console.log(error);
     }
   });
-  */
 });
