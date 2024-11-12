@@ -117,3 +117,8 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## 🙋‍♂️ Support
 If you encounter any issues or have questions about the project, feel free to open an issue or reach out to the maintainer.
+
+## EVM Contract Source
+```bash
+https://github.com/0xGoldMaker/sol-bridge-evm-contract
+```
