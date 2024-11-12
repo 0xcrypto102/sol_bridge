@@ -49,7 +49,7 @@ The architecture of the Solana-EVM Bridge consists of:
 
 ```bash
 git clone https://github.com/0xcrypto102/sol_bridge.git
-cd sol_bridg
+cd sol_bridge
 
 ```
 
@@ -68,9 +68,9 @@ npm install
 anchor build
 ```
 - Deploy the program
-  ```bash
-  solana program deploy ./target/deploy/sol_bridge.so
-  ```
+```bash
+solana program deploy ./target/deploy/sol_bridge.so
+```
 
 ## Unit-test
 
@@ -82,6 +82,26 @@ Commands:
 ```bash
 anchor run test
 ```
+
+### Test Cases
+
+- Initialization:
+  - Setting up the bridge with a protocol fee.
+- Setting Protocol Fee:
+  - Adjusting the fee that the bridge charges.
+- Managing Tokens:
+  - Adding bridgeable tokens with addToken.
+  - Removing bridgeable tokens with removeToken.
+- Liquidity Management:
+  - Adding liquidity via addLiquidity.
+  - Updating token balances using updateTokenBalance.
+- Token Transfer:
+  - Sending tokens with send.
+- Handling Messages:
+  - Processing incoming messages using messageReceive.
+- Withdrawals:
+  - Withdrawing tokens and protocol fees.
+
 
 ## 🤝 Contributing
 Contributions are welcome! If you have suggestions for improving the project, please create an issue or submit a pull request.
